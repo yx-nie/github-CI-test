@@ -1,0 +1,82 @@
+name: ML Training Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: 1. Compile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build (fail fast on any error)
+        run: dotnet build --configuration Release --no-restore
+
+  test:
+    name: 2. Component Tests
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Run unit/component tests
+        run: dotnet test --configuration Release --no-build
+        # Tests should cover:
+        # • Data generation shape verification
+        # • Training convergence checks
+        # • Prediction accuracy bounds
+
+  validate:
+    name: 3. Validation Gate + Artifacts
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore & Build
+        run: dotnet build --configuration Release
+
+      - name: Run full training cycle
+        run: dotnet run --configuration Release --no-build
+
+      - name: Validation Gate - Check Test MSE
+        run: |
+          TEST_MSE=$(grep "test_mse=" metrics.txt | cut -d'=' -f2)
+          echo "Test MSE = $TEST_MSE"
+          if (( $(echo "$TEST_MSE > 1.0" | bc -l) )); then
+            echo "❌ Validation failed: Test MSE ($TEST_MSE) is above threshold of 1.0"
+            exit 1
+          fi
+          echo "✅ Validation passed"
+
+      - name: Upload versioned artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ml-model-artifacts-${{ github.sha }}
+          path: |
+            model_output.txt
+            metrics.txt
+          if-no-files-found: error
+          retention-days: 90

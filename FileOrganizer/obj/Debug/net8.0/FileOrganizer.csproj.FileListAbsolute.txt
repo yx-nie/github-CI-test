@@ -1,0 +1,15 @@
+/Users/yongxingnie/Desktop/python/FileOrganizer/bin/Debug/net8.0/FileOrganizer
+/Users/yongxingnie/Desktop/python/FileOrganizer/bin/Debug/net8.0/FileOrganizer.deps.json
+/Users/yongxingnie/Desktop/python/FileOrganizer/bin/Debug/net8.0/FileOrganizer.runtimeconfig.json
+/Users/yongxingnie/Desktop/python/FileOrganizer/bin/Debug/net8.0/FileOrganizer.dll
+/Users/yongxingnie/Desktop/python/FileOrganizer/bin/Debug/net8.0/FileOrganizer.pdb
+/Users/yongxingnie/Desktop/python/FileOrganizer/obj/Debug/net8.0/FileOrganizer.GeneratedMSBuildEditorConfig.editorconfig
+/Users/yongxingnie/Desktop/python/FileOrganizer/obj/Debug/net8.0/FileOrganizer.AssemblyInfoInputs.cache
+/Users/yongxingnie/Desktop/python/FileOrganizer/obj/Debug/net8.0/FileOrganizer.AssemblyInfo.cs
+/Users/yongxingnie/Desktop/python/FileOrganizer/obj/Debug/net8.0/FileOrganizer.csproj.CoreCompileInputs.cache
+/Users/yongxingnie/Desktop/python/FileOrganizer/obj/Debug/net8.0/FileOrganizer.sourcelink.json
+/Users/yongxingnie/Desktop/python/FileOrganizer/obj/Debug/net8.0/FileOrganizer.dll
+/Users/yongxingnie/Desktop/python/FileOrganizer/obj/Debug/net8.0/refint/FileOrganizer.dll
+/Users/yongxingnie/Desktop/python/FileOrganizer/obj/Debug/net8.0/FileOrganizer.pdb
+/Users/yongxingnie/Desktop/python/FileOrganizer/obj/Debug/net8.0/FileOrganizer.genruntimeconfig.cache
+/Users/yongxingnie/Desktop/python/FileOrganizer/obj/Debug/net8.0/ref/FileOrganizer.dll
