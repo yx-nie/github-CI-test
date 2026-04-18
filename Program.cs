@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using Trainer = MlApp.Trainer;
 
 class codefile
 {
@@ -9,6 +10,7 @@ class codefile
     static double lr = 0.01;
 
     static void Main(string[] args)
+
     {
         Console.WriteLine("=== ML Training Pipeline ===");
 

@@ -1,4 +1,4 @@
-name: ML Training Pipeline
+name: ML Training CI
 
 on:
   push:
@@ -7,76 +7,50 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
-    name: 1. Compile
+  build: # STAGE 1: Compilation - halts on any error
+    name: 1. Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+      - run: dotnet restore
+      - run: dotnet build --configuration Release --no-restore /warnaserror
 
-      - name: Restore
-        run: dotnet restore
-
-      - name: Build (fail fast on any error)
-        run: dotnet build --configuration Release --no-restore
-
-  test:
-    name: 2. Component Tests
-    needs: build
+  test: # STAGE 2: Unit Testing
+    name: 2. Unit Tests
+    needs: build # will not run if build fails
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: '8.0.x' }
+      - run: dotnet test --configuration Release --no-build --verbosity normal
 
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-
-      - name: Run unit/component tests
-        run: dotnet test --configuration Release --no-build
-        # Tests should cover:
-        # • Data generation shape verification
-        # • Training convergence checks
-        # • Prediction accuracy bounds
-
-  validate:
-    name: 3. Validation Gate + Artifacts
-    needs: test
+  validate: # STAGE 3: Validation Gate + Artifacts
+    name: 3. Validate & Publish
+    needs: test # will not run if tests fail
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: '8.0.x' }
+      
+      - name: Run full training
+        run: dotnet run --project src/MlApp --configuration Release
 
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-
-      - name: Restore & Build
-        run: dotnet build --configuration Release
-
-      - name: Run full training cycle
-        run: dotnet run --configuration Release --no-build
-
-      - name: Validation Gate - Check Test MSE
+      - name: Validation Gate - Fail if MSE > 1.0
         run: |
-          TEST_MSE=$(grep "test_mse=" metrics.txt | cut -d'=' -f2)
+          TEST_MSE=$(grep '^test_mse=' metrics.txt | cut -d'=' -f2)
           echo "Test MSE = $TEST_MSE"
-          if (( $(echo "$TEST_MSE > 1.0" | bc -l) )); then
-            echo "❌ Validation failed: Test MSE ($TEST_MSE) is above threshold of 1.0"
-            exit 1
-          fi
-          echo "✅ Validation passed"
+          python3 -c "import sys; sys.exit(0 if float(sys.argv[1]) < 1.0 else 1)" $TEST_MSE
 
-      - name: Upload versioned artifacts
+      - name: Publish Versioned Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ml-model-artifacts-${{ github.sha }}
+          name: model-${{ github.run_number }}-${{ github.sha }}
           path: |
             model_output.txt
             metrics.txt
-          if-no-files-found: error
-          retention-days: 90
+          retention-days: 30
